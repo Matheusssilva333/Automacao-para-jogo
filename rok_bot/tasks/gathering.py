@@ -41,16 +41,43 @@ class GatheringTask:
 
     def recall_gathering_march(self):
         # 1. Open March List
-        # 2. Find a gathering march
-        # 3. Click 'Return'
-        pass
+        if not self.bot.click_image("buttons/march_list"):
+            return False
+            
+        # 2. Find a gathering march and Click 'Return'
+        if self.bot.click_image("buttons/recall_gathering"):
+            print("Successfully recalled a gathering march.")
+            return True
+        
+        return False
 
     def send_to_gather(self):
-        # 1. Open search menu
-        # 2. Select resource type
-        # 3. Search and click result
-        # 4. Click 'Gather'
-        # 5. Select march and send
         print("Searching for resource node...")
-        # Placeholder for vision-based interaction
-        pass
+        # 1. Open search menu
+        if not self.bot.click_image("buttons/search"):
+            return False
+            
+        # 2. Select resource type (randomly or based on priority)
+        rss_to_find = random.choice(self.rss_types)
+        if not self.bot.click_image(f"tabs/rss_{rss_to_find}"):
+            # Fallback to food if specific one fails
+            self.bot.click_image("tabs/rss_food")
+            
+        # 3. Search and click result
+        self.bot.click_image("buttons/search_confirm")
+        time.sleep(2)
+        
+        # 4. Click the resource node on screen
+        if not self.bot.click_image("world/resource_node", threshold=0.7):
+            return False
+            
+        # 5. Click 'Gather'
+        if not self.bot.click_image("buttons/gather"):
+            return False
+            
+        # 6. Select march and send
+        if self.bot.click_image("buttons/march_confirm", timeout=5):
+            print(f"Sent march to gather {rss_to_find}.")
+            return True
+        
+        return False

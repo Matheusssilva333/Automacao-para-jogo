@@ -30,11 +30,11 @@ class ADBClient:
         if self.serial:
             cmd.extend(["-s", self.serial])
         cmd.extend(["shell", "screencap", "-p"])
-        
+          
         result = subprocess.run(cmd, capture_output=True)
         if result.returncode != 0:
             return None
-        
+
         # ADB screencap -p output often has \r\n on Windows which breaks PNG format
         # We need to clean the byte stream
         data = result.stdout.replace(b'\r\n', b'\n')

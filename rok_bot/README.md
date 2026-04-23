@@ -22,6 +22,7 @@ Este é um bot autônomo de alta performance desenvolvido em Python para o jogo 
    pip install -r requirements.txt
    ```
 
+
 2. Certifique-se de que o ADB reconhece seu emulador:
    ```bash
    adb devices
