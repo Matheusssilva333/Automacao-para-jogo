@@ -4,7 +4,8 @@ import random
 class GatheringTask:
     def __init__(self, bot):
         self.bot = bot
-        self.rss_types = ["food", "wood", "stone", "gold", "gems"]
+        # Tab assets: tabs/rss_<name>.png (see assets/README_ASSETS.md)
+        self.rss_types = ["food", "wood", "stone", "gold"]
 
     def run(self):
         """

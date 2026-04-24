@@ -34,8 +34,14 @@ class RoKBot:
         start_time = time.time()
         
         while True:
-            pos = self.vision.find_template(self.get_screenshot(), template_path, threshold)
-            if pos:
+            shot = self.get_screenshot()
+            if shot is None:
+                if time.time() - start_time > timeout:
+                    break
+                time.sleep(0.5)
+                continue
+            pos = self.vision.find_template(shot, template_path, threshold)
+            if pos is not None:
                 self.adb.tap(pos[0], pos[1])
                 return True
             
@@ -47,7 +53,10 @@ class RoKBot:
 
     def image_exists(self, template_name, threshold=0.8):
         template_path = f"assets/{template_name}.png"
-        return self.vision.find_template(self.get_screenshot(), template_path, threshold) is not None
+        shot = self.get_screenshot()
+        if shot is None:
+            return False
+        return self.vision.find_template(shot, template_path, threshold) is not None
 
     def get_idle_march_count(self):
         """

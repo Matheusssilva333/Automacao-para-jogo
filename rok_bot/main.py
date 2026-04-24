@@ -1,3 +1,13 @@
+import os
+import sys
+from pathlib import Path
+
+# Ensure imports and relative paths (assets/, adb) work when launched from any cwd
+_ROOT = Path(__file__).resolve().parent
+if str(_ROOT) not in sys.path:
+    sys.path.insert(0, str(_ROOT))
+os.chdir(_ROOT)
+
 from core.bot import RoKBot
 
 def main():
@@ -10,7 +20,10 @@ def main():
     devices = bot.adb.get_devices()
     
     if not devices:
-        print("Error: No ADB devices found. Please connect your emulator.")
+        print(
+            "Error: No ADB devices found. Install Android Platform Tools, add adb "
+            "to PATH, enable USB debugging, and connect an emulator or device."
+        )
         return
 
     print(f"Connecting to: {devices[0]}")

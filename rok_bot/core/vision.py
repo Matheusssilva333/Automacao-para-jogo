@@ -6,6 +6,19 @@ class Vision:
     def __init__(self):
         pass
 
+    def _pil_to_bgr(self, screenshot):
+        """Convert a PIL Image to BGR ndarray for OpenCV."""
+        if screenshot is None:
+            return None
+        arr = np.asarray(screenshot)
+        if arr.size == 0:
+            return None
+        if arr.ndim == 2:
+            return cv2.cvtColor(arr, cv2.COLOR_GRAY2BGR)
+        if arr.shape[2] == 4:
+            return cv2.cvtColor(arr, cv2.COLOR_RGBA2BGR)
+        return cv2.cvtColor(arr, cv2.COLOR_RGB2BGR)
+
     def find_template(self, screenshot, template_path, threshold=0.8):
         """
         Finds a template in a screenshot.
@@ -14,8 +27,9 @@ class Vision:
         :param threshold: Matching threshold
         :return: (x, y) coordinates of the match center, or None
         """
-        # Convert PIL image to OpenCV format
-        screen_cv = cv2.cvtColor(np.array(screenshot), cv2.COLOR_RGB2BGR)
+        screen_cv = self._pil_to_bgr(screenshot)
+        if screen_cv is None:
+            return None
         template = cv2.imread(template_path)
         
         if template is None:
@@ -23,6 +37,9 @@ class Vision:
             return None
 
         h, w = template.shape[:2]
+        sh, sw = screen_cv.shape[:2]
+        if h > sh or w > sw:
+            return None
         res = cv2.matchTemplate(screen_cv, template, cv2.TM_CCOEFF_NORMED)
         min_val, max_val, min_loc, max_loc = cv2.minMaxLoc(res)
 
@@ -38,13 +55,18 @@ class Vision:
         """
         Finds all occurrences of a template.
         """
-        screen_cv = cv2.cvtColor(np.array(screenshot), cv2.COLOR_RGB2BGR)
+        screen_cv = self._pil_to_bgr(screenshot)
+        if screen_cv is None:
+            return []
         template = cv2.imread(template_path)
         
         if template is None:
             return []
 
         h, w = template.shape[:2]
+        sh, sw = screen_cv.shape[:2]
+        if h > sh or w > sw:
+            return []
         res = cv2.matchTemplate(screen_cv, template, cv2.TM_CCOEFF_NORMED)
         loc = np.where(res >= threshold)
         

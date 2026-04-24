@@ -11,7 +11,7 @@ class CityMgmtTask:
         """
         Critical: Detect incoming attack (red screen) and apply shield.
         """
-        if self.bot.vision.find_template(self.bot.get_screenshot(), "assets/red_screen_indicator.png"):
+        if self.bot.image_exists("red_screen_indicator"):
             print("ALERT: City under attack! Applying Peace Shield...")
             self.apply_shield()
 

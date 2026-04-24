@@ -1,6 +1,4 @@
 import subprocess
-import os
-import time
 from PIL import Image
 import io
 
@@ -14,7 +12,16 @@ class ADBClient:
         if self.serial:
             cmd.extend(["-s", self.serial])
         cmd.extend(args)
-        result = subprocess.run(cmd, capture_output=True, text=True)
+        try:
+            result = subprocess.run(
+                cmd, capture_output=True, text=True, timeout=60
+            )
+        except FileNotFoundError:
+            return ""
+        except subprocess.TimeoutExpired:
+            return ""
+        if result.returncode != 0:
+            return (result.stdout or "").strip()
         return result.stdout.strip()
 
     def tap(self, x, y):
@@ -31,19 +38,30 @@ class ADBClient:
             cmd.extend(["-s", self.serial])
         cmd.extend(["shell", "screencap", "-p"])
           
-        result = subprocess.run(cmd, capture_output=True)
-        if result.returncode != 0:
+        try:
+            result = subprocess.run(cmd, capture_output=True, timeout=30)
+        except FileNotFoundError:
+            return None
+        except subprocess.TimeoutExpired:
+            return None
+        if result.returncode != 0 or not result.stdout:
             return None
 
         # ADB screencap -p output often has \r\n on Windows which breaks PNG format
         # We need to clean the byte stream
         data = result.stdout.replace(b'\r\n', b'\n')
-        return Image.open(io.BytesIO(data))
+        try:
+            return Image.open(io.BytesIO(data))
+        except OSError:
+            return None
 
     def get_devices(self):
         output = self.run_command(["devices"])
-        lines = output.splitlines()[1:]
-        devices = [line.split()[0] for line in lines if "device" in line]
+        devices = []
+        for line in output.splitlines()[1:]:
+            parts = line.split()
+            if len(parts) >= 2 and parts[1] == "device":
+                devices.append(parts[0])
         return devices
 
 if __name__ == "__main__":
